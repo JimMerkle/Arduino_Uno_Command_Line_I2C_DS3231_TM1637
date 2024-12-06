@@ -35,7 +35,7 @@ const COMMAND_ITEM cmd_table[] = {
     {"i2cscan",   "scan I2C bus, looking for devices",            1, cl_i2c_scan},
     {"time",      "time display or set with <hh mm ss>",          1, cl_time},
     {"date",      "date display or set with <month day year>",    1, cl_date},
-    {"ds3231dump","dump the DS3231 register data",                1, cl_ds3231_dump},
+    {"dump",      "dump the DS3231 register data",                1, cl_ds3231_dump},
 
     {NULL,NULL,0,NULL}, /* end of table */
 };

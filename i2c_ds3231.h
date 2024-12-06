@@ -45,6 +45,9 @@ typedef struct {
 void init_ds3231(void);
 void write_ds3231(const DATE_TIME * dt);
 void read_ds3231(DATE_TIME * dt);
+uint8_t ds3231_read_status(void);
+uint8_t ds3231_read_osf(void);
+void ds3231_clearOSF(void);
 
 //=================================================================================================
 // Command line functions

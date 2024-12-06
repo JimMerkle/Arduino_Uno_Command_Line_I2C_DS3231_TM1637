@@ -40,9 +40,8 @@ void setup() {
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
-
-  init_ds3231(); // init DS3231 - allow it to begin counting
   cl_setup();    // init command line
+  //init_ds3231(); // init DS3231 - reset time values if OSF bit set
   init_tm1637(); // init TM1637 display
 }
 
@@ -91,6 +90,7 @@ void loop() {
   static uint32_t previous_ticks = 0;
   if(millis() - previous_ticks >= 1000) {
     // if elapsed time is a second or greater...
+    previous_ticks = millis(); // reload for next second
     update_clock();
   }
 }

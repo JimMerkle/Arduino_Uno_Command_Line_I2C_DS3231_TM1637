@@ -112,7 +112,7 @@ int i2c_write_read(uint8_t i2c_address, uint8_t * pwrite, uint8_t wr_count, uint
 |  12h  | DATA  | DATA  |   0   |   0    |   0   |   0   |   0   |   0   |LSB of Temp  |     —       |
 |====================================================================================================*/
 // Notes:
-// The numberic values stored to / read from the DS3231 for seconds, minutes, hours, day, date, month, year,
+// The numeric values stored to / read from the DS3231 for seconds, minutes, hours, day, date, month, year,
 // use BCD encoding.
 
 //=================================================================================================
@@ -123,6 +123,7 @@ int i2c_write_read(uint8_t i2c_address, uint8_t * pwrite, uint8_t wr_count, uint
 static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 
+#if 0
 // Values to write to DS3231 for a "reset" condition
 const DATE_TIME dt_reset = {
 	0,  //< Year offset from 2000
@@ -132,6 +133,7 @@ const DATE_TIME dt_reset = {
 	0,  //< Minutes 0-59
 	0   //< Seconds 0-59
 };
+#endif
 
 // The Time/Date registers are located at index 00h - 06h
 // Use a "generic I2C API" to write index registers 000h - 06h
@@ -150,8 +152,22 @@ void write_ds3231(const DATE_TIME * dt)
 	reg_data[7] = bin2bcd(dt->yOff);
 
 	i2c_write_read(I2C_ADDRESS_DS3231, reg_data, sizeof(reg_data), NULL, 0);
+}
 
-	// Clear the OSF bit
+// Return the value of the status register (index 0Fh)
+uint8_t ds3231_read_status(void)
+{
+  // Read value of status register into reg_data
+	uint8_t index = 0x0F;
+	uint8_t reg_data;
+	i2c_write_read(I2C_ADDRESS_DS3231, &index, sizeof(index), &reg_data, sizeof(reg_data));
+  return reg_data;
+}
+
+void ds3231_clearOSF(void)
+{
+	// Clear the status register (index 0Fh) OSF bit
+  printf("Clear OSF\n");
 	uint8_t index_status[2] = {0x0F, 0x00}; // index of status register and value to write to it
 	i2c_write_read(I2C_ADDRESS_DS3231, index_status, sizeof(index_status), NULL, 0);
 }
@@ -173,6 +189,7 @@ void read_ds3231(DATE_TIME * dt)
 	dt->yOff = bcd2bin(reg_data[6]);
 }
 
+#if 0
 // Write the DS3231 Control register, get RTC counting
 // Does NOT clear Oscillator Stop Flag (OSF)
 // Set time to reset value if clock was stopped
@@ -181,15 +198,14 @@ void init_ds3231(void)
 	uint8_t indx_control[2] = {0x0E, 0b00000000};  // Index, Control
   i2c_write_read(I2C_ADDRESS_DS3231, indx_control, sizeof(indx_control), NULL, 0);
 	// Read status register - is OSF set?
-	uint8_t index = 0x0F;
-	uint8_t reg_data;
-	i2c_write_read(I2C_ADDRESS_DS3231, &index, sizeof(index), &reg_data, sizeof(reg_data));
+	uint8_t status_reg = ds3231_read_status();
 	// If OSF (BIT 7) set, write initial values to RTC registers
-	if(reg_data & 0x80) {
-    printf("Writing reset value to DS3231\n");
+	if(status_reg & 0x80) {
+    printf("OSF is SET, writing reset time and date values to DS3231\n");
 		write_ds3231(&dt_reset);
 	}
 }
+#endif
 
 // Command line method to read / set the time
 int cl_time(void)
@@ -203,6 +219,8 @@ int cl_time(void)
 		dt.ss = strtol(argv[3], NULL, 10);
 		// Write new time values to DS3231
 		write_ds3231(&dt);
+    // Reset the OSF bit
+    ds3231_clearOSF();
 	}
 
 	// Always read the DS3231 and display the time
@@ -224,7 +242,7 @@ int cl_date(void)
 		uint16_t year = strtol(argv[3], NULL, 10);
 		if(year >= 2000) year -= 2000; // convert to offset
 		dt.yOff = (uint8_t)year;
-		// Write new time values to DS3231
+		// Write new date values to DS3231
 		write_ds3231(&dt);
 	}
 
@@ -251,6 +269,7 @@ int cl_ds3231_dump(void)
     printf("%02X   0x%02X   %s\n",i,reg_data[i],reg_name[i]);
   }
 	printf("\n");
+  return 0;
 }
 
 //=================================================================================================
@@ -286,7 +305,8 @@ void update_clock(void)
   // If the minutes value changes, update the display
   if(dt.mm != previous_minutes) {
     if(dt.hh>12) dt.hh-=12; // convert 24hr display to 12hr
-    display.showNumberDecEx(dt.hh, colonMask, false, 2, 0);
+    // if hours (dt.hh) is zero, the colon doesn't display.  Display 12 instead.
+    display.showNumberDecEx(dt.hh?dt.hh:12, colonMask, false, 2, 0); 
     display.showNumberDec(dt.mm, true, 2, 2);
     previous_minutes = dt.mm;
   }
