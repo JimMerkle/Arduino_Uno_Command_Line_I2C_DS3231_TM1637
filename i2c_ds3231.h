@@ -32,6 +32,7 @@ int i2c_write_read(uint8_t i2c_address, uint8_t * pwrite, uint8_t wr_count, uint
 /** Constants */
 #define I2C_ADDRESS_DS3231  0x68
 
+#ifndef DATE_TIME_
 // Structure to hold/record time read from to written to an external RTC module (DS3231)
 typedef struct {
 	uint8_t yOff; ///< Year offset from 2000
@@ -41,6 +42,8 @@ typedef struct {
 	uint8_t mm;   ///< Minutes 0-59
 	uint8_t ss;   ///< Seconds 0-59
 }DATE_TIME;
+#define DATE_TIME_
+#endif
 
 void init_ds3231(void);
 void write_ds3231(const DATE_TIME * dt);
@@ -56,6 +59,7 @@ int cl_i2c_scan(void);
 int cl_time(void);
 int cl_date(void);
 int cl_ds3231_dump(void);
+int cl_sqw_test(void);
 
 //=================================================================================================
 // TM1637 functions

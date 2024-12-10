@@ -36,6 +36,7 @@ const COMMAND_ITEM cmd_table[] = {
     {"time",      "time display or set with <hh mm ss>",          1, cl_time},
     {"date",      "date display or set with <month day year>",    1, cl_date},
     {"dump",      "dump the DS3231 register data",                1, cl_ds3231_dump},
+    {"sqw",       "sqw <0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3: 8192Hz>",1, cl_sqw_test},
 
     {NULL,NULL,0,NULL}, /* end of table */
 };

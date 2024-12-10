@@ -8,6 +8,7 @@
 #include "command_line.h"
 #include "i2c_ds3231.h"
 #include <TM1637Display.h>
+#include "RTClib.h" // use local RTClib library
 
 // Command line method to perform a scan of the I2C bus
 int cl_i2c_scan(void)
@@ -269,6 +270,43 @@ int cl_ds3231_dump(void)
     printf("%02X   0x%02X   %s\n",i,reg_data[i],reg_name[i]);
   }
 	printf("\n");
+  return 0;
+}
+
+// Test the INT/SQW output
+// Allow the user to enable one of several test functions via an argument
+// 0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3:8192Hz
+int cl_sqw_test(void)
+{
+  if(argc > 1) {
+    uint8_t RSx = (uint8_t) strtol(argv[1], NULL, 10); // assume decimal input
+    RSx &= 3; // keep only lower 2 bits
+    printf("%s: input: %u\n",__func__,RSx);
+    RSx <<=3; // move the 2 bits into BIT4:BIT3 position (The value of RSx, written to Control Register (0Eh), will now enable SQW signal)
+  	uint8_t index_data[2] = {0x0E,0x1C}; // write default (POR) value, turning off SQW output
+    i2c_write_read(I2C_ADDRESS_DS3231, index_data, sizeof(index_data), NULL, 0);
+    index_data[1] = RSx; // desired register - index 0Eh value
+    i2c_write_read(I2C_ADDRESS_DS3231, index_data, sizeof(index_data), NULL, 0);
+    printf("0X%02X written to index 0Eh\n",RSx);
+  }
+  else {
+    // no arguments
+#if 0
+    DATE_TIME dt;
+    printf("Setting alarm for 3 seconds from now...\n");
+    // Get current time and convert it to unix seconds count
+    read_ds3231(&dt); // fill in DATE_TIME structure
+    uint32_t ut_now = rtc2unix(&dt);
+    uint32_t ut_future = ut_now + 3;
+    // Convert back into DATE-TIME format
+    unix2rtc(&dt, ut_future); // DATE_TIME is now 3 seconds in the future
+#else
+    printf("%s: Turn off SQW output\n",__func__);
+    uint8_t index_data[2] = {0x0E,0x1C}; // write default (POR) value, turning off SQW output
+    i2c_write_read(I2C_ADDRESS_DS3231, index_data, sizeof(index_data), NULL, 0);
+#endif
+  }
+
   return 0;
 }
 
