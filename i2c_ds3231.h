@@ -60,6 +60,7 @@ int cl_time(void);
 int cl_date(void);
 int cl_ds3231_dump(void);
 int cl_sqw_test(void);
+int cl_alarm(void);
 
 //=================================================================================================
 // TM1637 functions
