@@ -54,6 +54,7 @@ int cl_parseArgcArgv(char * inBuf,char **words, int count);
 void cl_setup(void);
 void cl_loop(void);
 void cl_process_buffer(void);
+int cl_reset(void) ;
 
 // command line functions
 int cl_help(void);

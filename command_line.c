@@ -37,6 +37,7 @@ const COMMAND_ITEM cmd_table[] = {
     {"date",      "date display or set with <month day year>",    1, cl_date},
     {"dump",      "dump the DS3231 register data",                1, cl_ds3231_dump},
     {"sqw",       "sqw <0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3: 8192Hz>",1, cl_sqw_test},
+    {"reset",     "reset the processor",                          1, cl_reset},
 
     {NULL,NULL,0,NULL}, /* end of table */
 };
@@ -208,3 +209,7 @@ int cl_add(void) {
     printf("returning %d\n\n", ret);
     return ret;
 }
+
+void reboot(void); // reset_avr.c
+
+int cl_reset(void) {reboot(); return 0;}
