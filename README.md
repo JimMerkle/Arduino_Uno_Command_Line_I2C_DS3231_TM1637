@@ -32,7 +32,7 @@
 ***int i2c_write_read(uint8_t i2c_address, uint8_t * pwrite, uint8_t wr_count, uint8_t * pread, uint8_t rd_count);***
     
     Implementing this helper function allows easy code sharing with other development environments.
-    As an example, any I2C code that uses this function can also work with STM32Cube programs.
+    As an example, any I2C code that uses this function can also work with STM32CubeIDE programs.
 
 ## DS3231 RTC Support
     
@@ -41,6 +41,14 @@
     * write_ds3231()
     * cl_time()  - Command line example that reads (or sets) the RTC time
     * cl_date()  - Command line example that reads (or sets) the RTC date
+
+## Reset Command Example
+    
+    Use Watchdog timer to implement a software controled reset
+
+## Demonstrate RTC Alarm
+    
+    Set an alarm for 5 seconds in the future. Watch alarm flag trigger interrupt.
 
 ## Notes
     
