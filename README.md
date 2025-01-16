@@ -49,7 +49,7 @@
 ## Implement cl_i2c_read_write() function
     
    Read DS3231 Control Register, and then write the value back
-   This interaction produces a nice example of I2C waveforms.
+   This interaction produces nice example I2C waveforms.
    See resulting capture: i2c_ds3231_read_write.jpg
 
 ## Reset Command Example
