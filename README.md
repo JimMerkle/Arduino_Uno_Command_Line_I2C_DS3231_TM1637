@@ -42,13 +42,19 @@
     * cl_time()  - Command line example that reads (or sets) the RTC time
     * cl_date()  - Command line example that reads (or sets) the RTC date
 
-## Reset Command Example
-    
-    Use Watchdog timer to implement a software controled reset
-
 ## Demonstrate RTC Alarm
     
     Set an alarm for 5 seconds in the future. Watch alarm flag trigger interrupt.
+
+## Implement cl_i2c_read_write() function
+    
+   Read DS3231 Control Register, and then write the value back
+   This interaction produces a nice example of I2C waveforms.
+   See resulting capture: i2c_ds3231_read_write.jpg
+
+## Reset Command Example
+    
+    Use Watchdog timer to implement a software controled reset
 
 ## Notes
     

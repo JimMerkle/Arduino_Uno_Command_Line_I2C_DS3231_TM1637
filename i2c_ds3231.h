@@ -61,6 +61,7 @@ int cl_date(void);
 int cl_ds3231_dump(void);
 int cl_sqw_test(void);
 int cl_alarm(void);
+int cl_i2c_read_write(void);
 
 //=================================================================================================
 // TM1637 functions

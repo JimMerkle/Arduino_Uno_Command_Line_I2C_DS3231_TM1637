@@ -377,6 +377,21 @@ int cl_alarm(void)
     return 0;
 }
 
+// Create a set of I2C waveforms showing reading a register and then writing that register
+int cl_i2c_read_write(void)
+{
+  printf("%s: reading and then writing\n",__func__);
+  uint8_t index = 0x0E; // control register
+	uint8_t control_reg;
+  // Read contents of control register
+	i2c_write_read(I2C_ADDRESS_DS3231, &index, sizeof(index), &control_reg, sizeof(control_reg));
+  printf("Control register value: 0x%02X\n",control_reg);
+  // Write the contents of control register back
+  uint8_t write_data[2]={index,control_reg};
+  i2c_write_read(I2C_ADDRESS_DS3231,write_data, sizeof(write_data), NULL, 0);
+  return 0;
+}
+
 //=================================================================================================
 // TM1637 Defines - functions
 //=================================================================================================

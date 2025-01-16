@@ -39,6 +39,7 @@ const COMMAND_ITEM cmd_table[] = {
     {"sqw",       "sqw <0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3: 8192Hz>",1, cl_sqw_test},
     {"alarm",     "set alarm for 5 seconds. Wait for it",         1, cl_alarm},
     {"reset",     "reset the processor",                          1, cl_reset},
+    {"i2crw",     "read/write control register",                  1, cl_i2c_read_write},
 
     {NULL,NULL,0,NULL}, /* end of table */
 };
