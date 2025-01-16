@@ -48,9 +48,19 @@
 
 ## Implement cl_i2c_read_write() function
     
-   Read DS3231 Control Register, and then write the value back
-   This interaction produces nice example I2C waveforms.
-   See resulting capture: i2c_ds3231_read_write.jpg
+    Read DS3231 Control Register, and then write the value back
+    This interaction produces nice example I2C waveforms.
+    See resulting capture: i2c_ds3231_read_write.jpg
+
+## AT24C32 functions
+    
+    int read_at24c32()          read one or more bytes from the AT24C32
+    int fill_at24c32()          fill the AT24C32 with <value>
+    int write_byte_at24c32()    write a byte to an EEROM address
+    int at24c32_is_busy()       check if the device is still busy writing
+    int cl_dump_at24c32()       command line - display the entire EEPROM
+    int cl_fill_at24c32()       command line - fill the device with <value>
+    int cl_write_at24c32()      command line - write "My Favorite String" to the EEPROM
 
 ## Reset Command Example
     

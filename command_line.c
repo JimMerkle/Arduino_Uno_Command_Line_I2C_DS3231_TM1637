@@ -24,7 +24,7 @@
 typedef struct {
   char * command;
   char * comment;
-  int arg_cnt; // count of arguments plus command
+  uint8_t arg_cnt; // count of arguments plus command
   int (*function)(void); // pointer to command function
 } COMMAND_ITEM;
 
@@ -36,10 +36,13 @@ const COMMAND_ITEM cmd_table[] = {
     {"time",      "time display or set with <hh mm ss>",          1, cl_time},
     {"date",      "date display or set with <month day year>",    1, cl_date},
     {"dump",      "dump the DS3231 register data",                1, cl_ds3231_dump},
-    {"sqw",       "sqw <0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3: 8192Hz>",1, cl_sqw_test},
+//    {"sqw",       "sqw <0: 1Hz, 1: 1024Hz, 2: 4096Hz, 3: 8192Hz>",1, cl_sqw_test},
     {"alarm",     "set alarm for 5 seconds. Wait for it",         1, cl_alarm},
     {"reset",     "reset the processor",                          1, cl_reset},
-    {"i2crw",     "read/write control register",                  1, cl_i2c_read_write},
+//    {"i2crw",     "read/write control register",                  1, cl_i2c_read_write},
+    {"eedump",    "dump contents of AT24C32",                     1, cl_dump_at24c32},
+    {"eefill",    "fill AT24C32 <value>",                         2, cl_fill_at24c32},    
+    {"eewrite",   "write \"string\" to EEPROM",                   2, cl_write_at24c32},
 
     {NULL,NULL,0,NULL}, /* end of table */
 };

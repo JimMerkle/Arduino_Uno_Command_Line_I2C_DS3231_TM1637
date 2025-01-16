@@ -53,6 +53,20 @@ uint8_t ds3231_read_osf(void);
 void ds3231_clearOSF(void);
 
 //=================================================================================================
+// AT24C32 support defines & functions
+//=================================================================================================
+#define AT24C32_SIZE_BYTES        4096
+#define AT24C32_PAGE_SIZE_BYTES   32
+#define AT24C32_I2C_ADDRESS       0x57 // 7-bit address
+int read_at24c32(uint8_t device_i2c_address, uint16_t memory_address, uint8_t *buffer, uint16_t count);
+int fill_at24c32(uint8_t device_i2c_address, uint8_t fill_data_byte);
+int write_byte_at24c32(uint8_t device_i2c_address, uint16_t memory_address, uint8_t data_byte);
+int at24c32_is_busy(uint8_t device_i2c_address);
+int cl_dump_at24c32(void);
+int cl_fill_at24c32(void);
+int cl_write_at24c32(void);
+
+//=================================================================================================
 // Command line functions
 //=================================================================================================
 int cl_i2c_scan(void);

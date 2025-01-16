@@ -392,6 +392,128 @@ int cl_i2c_read_write(void)
   return 0;
 }
 
+// Write one byte of data to AT24C32, beginning at 'memory_address'
+// Return 1(true) for success, or 0(false) for failure
+// According to the datasheet, timing parameter tWR, need to allow 10ms between writes
+// If faster writing is desired, use page writes, or monitor acknowledge bit for writing complete
+int write_byte_at24c32(uint8_t device_i2c_address, uint16_t memory_address, uint8_t data_byte)
+{
+  if(memory_address >= AT24C32_SIZE_BYTES) {
+    printf("%s: memory_address too large!\n",__func__);
+    return 0;
+  }
+  // To perform a write, we begin by writing device_address, two memory address bytes, and the desired data byte (4 bytes total)
+  // memory address is provided high byte first
+  uint8_t memory_address_data[3] = {memory_address >> 8, memory_address, data_byte}; // low byte is cropped by compiler
+  i2c_write_read(device_i2c_address, memory_address_data, sizeof(memory_address_data), NULL, 0);
+  return 1;  
+}
+
+// Check if the AT24C32 is busy, or if it's available for a write
+// Returns 1(true) is busy writing, 0(false) not busy, device is available for a write
+int at24c32_is_busy(uint8_t device_i2c_address)
+{
+    // Use similar code used by i2cscanner...
+    Wire.beginTransmission(device_i2c_address);
+    uint8_t error = Wire.endTransmission();
+    if(0 == error)
+      return error;
+    else
+      return 1;
+}
+
+// Using page writes, fill the memory with a desired data value
+// Return 1(true) for success, or 0(false) for failure
+// Monitor acknowledge bit for writing complete
+// NOTE!!! The Wire library's buffer is only 32 bytes in size.  Need to limit data transactions to 32.
+// Using at24c32_is_busy() reduces this function's time to 805ms.
+#define BYTES_PER_PAGE_WRITE 16
+int fill_at24c32(uint8_t device_i2c_address, uint8_t fill_data_byte)
+{
+  uint32_t entry_millis = millis();
+  uint8_t memory_address_data[BYTES_PER_PAGE_WRITE+2];
+  //uint8_t memory_address_data[2];
+  memset(memory_address_data,fill_data_byte,sizeof(memory_address_data));
+  // According to the data sheet, a page write should be the fastest way to fill the device with data
+  for(uint16_t memory_address=0;memory_address < AT24C32_SIZE_BYTES;memory_address+=BYTES_PER_PAGE_WRITE) {
+    // memory address is provided high byte first
+    memory_address_data[0] = memory_address >> 8;
+    memory_address_data[1] = memory_address; // low byte is cropped by compiler
+    i2c_write_read(device_i2c_address, memory_address_data, sizeof(memory_address_data), NULL, 0);
+#if 1
+  // Page write sent, poll device, waiting for acknowledge bit to be low
+    uint32_t initial_millis = millis();
+    // Enter spin-wait for EEPROM
+    while(1) {
+      if(!at24c32_is_busy(device_i2c_address)) break;
+      // write should take 160ms max (16 * 10ms each)
+      if(millis() - initial_millis >= 200) {
+        printf("%s: write timeout!\n",__func__);
+        return 0;
+      }
+    }
+#else
+    delay(320);
+    printf(".");
+#endif
+  } // for-loop - write a page
+  uint32_t delta = millis() - entry_millis;
+  printf("%s duration: %lu ms\n",__func__,delta);
+  return 1;  
+}
+
+#define BYTES_PER_LINE 16
+// Dump the contents of the AT24C32
+int cl_dump_at24c32(void)
+{
+  uint8_t buff[BYTES_PER_LINE]; // 16 hex bytes per line
+  // According to the data sheet, a page write should be the fastest way to fill the device with data
+  for(uint16_t memory_address=0;memory_address < AT24C32_SIZE_BYTES;memory_address+=BYTES_PER_LINE) {
+    // Read a line of data
+    read_at24c32(AT24C32_I2C_ADDRESS, memory_address, buff, BYTES_PER_LINE);
+    printf("%04X: ",memory_address);
+    for(uint16_t i=0;i<BYTES_PER_LINE;i++) printf("%02X ",buff[i]);
+    printf("\n");
+  }
+  return 0;
+}
+
+// Command line method to fill the EEPROM with a value
+int cl_fill_at24c32(void)
+{
+  uint8_t value = (uint8_t) strtol(argv[1], NULL, 0); // allow user to use decimal or hex
+  printf("%s: filling EEPROM with 0x%02X\n",__func__,value);
+  return fill_at24c32(AT24C32_I2C_ADDRESS, value);
+}
+
+// Read one or more bytes of data from AT24C32, beginning at 'memory_address'
+// Return 1(true) for success, or 0(false) for failure
+int read_at24c32(uint8_t device_i2c_address, uint16_t memory_address, uint8_t *buffer, uint16_t count)
+{
+  if((memory_address + count) > AT24C32_SIZE_BYTES) {
+    printf("%s: memory_address + count too large!\n",__func__);
+    return 0;
+  }
+  // To initiate a read, we begin by writing device_address, and two memory address bytes (3 bytes total)
+  // This is followed by reading 'count' data bytes
+  // memory address is provided high byte first
+  uint8_t memory_address_buffer[2] = {memory_address >> 8, memory_address}; // low byte is cropped by compiler
+  i2c_write_read(device_i2c_address, memory_address_buffer, sizeof(memory_address_buffer), buffer, count);
+  return 1;  
+}
+
+// Collect string passed in - write to memory address 0
+int cl_write_at24c32(void) {
+  int length = strlen(argv[1]); // does not include null termination
+  uint16_t memory_address = 0;
+  for(;memory_address <= length;memory_address++) {
+    write_byte_at24c32(AT24C32_I2C_ADDRESS, memory_address, (uint8_t)(argv[1][memory_address]));
+    delay(10); // Max value for tWR
+  }
+  return 0;
+}
+
+
 //=================================================================================================
 // TM1637 Defines - functions
 //=================================================================================================
