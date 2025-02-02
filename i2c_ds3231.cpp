@@ -392,6 +392,26 @@ int cl_i2c_read_write(void)
   return 0;
 }
 
+//=================================================================================================
+// AT24C43 Functions
+//=================================================================================================
+// Search the 7 possible addresses for the AT24C32.  If found, return the address, else return 0.
+// The AT24C32 can reside at addresses 0x50 - 0x57
+uint8_t find_at24c32(void)
+{
+  for(uint8_t i2c_address = 0x50; i2c_address <= 0x57; i2c_address++) {
+    // Use similar code used by i2cscanner...
+    Wire.beginTransmission(i2c_address);
+    uint8_t error = Wire.endTransmission();
+    if(0 == error) {
+      printf("AT24C32 found, 0x%02X\n",i2c_address);
+      return i2c_address; // ACK received, return this address
+    }
+  }
+  printf("No AT24C32 found!\n");
+  return 0;
+}
+
 // Write one byte of data to AT24C32, beginning at 'memory_address'
 // Return 1(true) for success, or 0(false) for failure
 // According to the datasheet, timing parameter tWR, need to allow 10ms between writes
@@ -466,11 +486,14 @@ int fill_at24c32(uint8_t device_i2c_address, uint8_t fill_data_byte)
 // Dump the contents of the AT24C32
 int cl_dump_at24c32(void)
 {
+  uint8_t i2c_address = find_at24c32();
+  if(0 == i2c_address) return 0; // not found
+
   uint8_t buff[BYTES_PER_LINE]; // 16 hex bytes per line
   // According to the data sheet, a page write should be the fastest way to fill the device with data
   for(uint16_t memory_address=0;memory_address < AT24C32_SIZE_BYTES;memory_address+=BYTES_PER_LINE) {
     // Read a line of data
-    read_at24c32(AT24C32_I2C_ADDRESS, memory_address, buff, BYTES_PER_LINE);
+    read_at24c32(i2c_address, memory_address, buff, BYTES_PER_LINE);
     printf("%04X: ",memory_address);
     for(uint16_t i=0;i<BYTES_PER_LINE;i++) printf("%02X ",buff[i]);
     printf("\n");
@@ -481,9 +504,12 @@ int cl_dump_at24c32(void)
 // Command line method to fill the EEPROM with a value
 int cl_fill_at24c32(void)
 {
+  uint8_t i2c_address = find_at24c32();
+  if(0 == i2c_address) return 0; // not found
+
   uint8_t value = (uint8_t) strtol(argv[1], NULL, 0); // allow user to use decimal or hex
   printf("%s: filling EEPROM with 0x%02X\n",__func__,value);
-  return fill_at24c32(AT24C32_I2C_ADDRESS, value);
+  return fill_at24c32(i2c_address, value);
 }
 
 // Read one or more bytes of data from AT24C32, beginning at 'memory_address'
@@ -504,10 +530,13 @@ int read_at24c32(uint8_t device_i2c_address, uint16_t memory_address, uint8_t *b
 
 // Collect string passed in - write to memory address 0
 int cl_write_at24c32(void) {
+  uint8_t i2c_address = find_at24c32();
+  if(0 == i2c_address) return 0; // not found
+
   int length = strlen(argv[1]); // does not include null termination
   uint16_t memory_address = 0;
   for(;memory_address <= length;memory_address++) {
-    write_byte_at24c32(AT24C32_I2C_ADDRESS, memory_address, (uint8_t)(argv[1][memory_address]));
+    write_byte_at24c32(i2c_address, memory_address, (uint8_t)(argv[1][memory_address]));
     delay(10); // Max value for tWR
   }
   return 0;

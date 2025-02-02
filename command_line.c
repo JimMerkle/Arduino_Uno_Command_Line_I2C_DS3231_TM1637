@@ -22,16 +22,17 @@
 
 // Typedefs
 typedef struct {
-  char * command;
-  char * comment;
-  uint8_t arg_cnt; // count of arguments plus command
-  int (*function)(void); // pointer to command function
+  const char * command;
+  const char * comment;
+  const uint8_t arg_cnt; // count of arguments plus command
+  const int (*function)(void); // pointer to command function
 } COMMAND_ITEM;
 
+//__attribute__((section(".text")))  COMMAND_ITEM cmd_table[] = {
 const COMMAND_ITEM cmd_table[] = {
     {"?",         "display help menu",                            1, cl_help},
-    {"help",      "display help menu",                            1, cl_help},
-    {"add",       "add <number> <number>",                        3, cl_add},
+//    {"help",      "display help menu",                            1, cl_help},
+//    {"add",       "add <number> <number>",                        3, cl_add},
     {"i2cscan",   "scan I2C bus, looking for devices",            1, cl_i2c_scan},
     {"time",      "time display or set with <hh mm ss>",          1, cl_time},
     {"date",      "date display or set with <month day year>",    1, cl_date},
@@ -63,7 +64,7 @@ void cl_setup(void) {
     // Create version string
     sprintf(szversion,"Ver %u.%u.%u",fw_version.major,fw_version.minor,fw_version.build);
     printf("\nCommand Line parser, %s, %s\n",szversion,__DATE__);
-    printf("Enter \"help\" or \"?\" for list of commands\n");
+    printf("Enter \"?\" for list of commands\n");
     printf(">"); // initial prompt
 }
 

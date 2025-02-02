@@ -54,6 +54,7 @@
 
 ## AT24C32 functions
     
+    uint8_t find_at24c32()      search I2C address range 0x50 - 0x57 for AT24C32
     int read_at24c32()          read one or more bytes from the AT24C32
     int fill_at24c32()          fill the AT24C32 with <value>
     int write_byte_at24c32()    write a byte to an EEROM address
